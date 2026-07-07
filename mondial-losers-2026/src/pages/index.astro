@@ -1,0 +1,152 @@
+---
+import { items } from '@wix/data';
+import Layout from '../layouts/Layout.astro';
+
+let losers: any[] = [];
+let loadError = false;
+
+try {
+	const result = await items.query('losers').descending('eliminatedDate').limit(50).find();
+	losers = result.items;
+} catch (err) {
+	console.error('Failed to load losers collection', err);
+	loadError = true;
+}
+
+const roundOrder: Record<string, number> = { 'Round of 32': 0, 'Round of 16': 1, 'Quarter-final': 2, 'Semi-final': 3 };
+---
+
+<Layout title="Mondial Losers of 2026 — every team eliminated from the World Cup">
+	<section class="scoreboard">
+		<div class="count-pill">{losers.length} team{losers.length === 1 ? '' : 's'} eliminated so far</div>
+
+		{loadError && (
+			<p class="empty">The scoreboard is being re-strung. Check back in a moment.</p>
+		)}
+
+		{!loadError && losers.length === 0 && (
+			<p class="empty">Nobody has lost yet — the World Cup hasn't kicked off. Give it a minute.</p>
+		)}
+
+		<ul class="grid">
+			{losers.map((loser) => (
+				<li class="card">
+					<a href={`/losers/${loser.slug}`}>
+						<span class="flag" aria-hidden="true">{loser.flag}</span>
+						<div class="card-body">
+							<h2>{loser.team}</h2>
+							<p class="meta">
+								<span class="round">{loser.round}</span>
+								<span class="dot">·</span>
+								<span>lost to {loser.opponent}</span>
+							</p>
+							<p class="score">{loser.score}</p>
+						</div>
+						<span class="card-arrow" aria-hidden="true">→</span>
+					</a>
+				</li>
+			))}
+		</ul>
+	</section>
+</Layout>
+
+<style>
+	.scoreboard {
+		padding-top: 1rem;
+	}
+
+	.count-pill {
+		display: inline-block;
+		margin: 0 auto 1.5rem;
+		padding: 0.4rem 1rem;
+		background: rgba(220, 38, 38, 0.18);
+		border: 1px solid rgba(220, 38, 38, 0.4);
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+	}
+
+	.empty {
+		text-align: center;
+		color: rgba(247, 245, 239, 0.75);
+		padding: 3rem 1rem;
+	}
+
+	.grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1rem;
+	}
+
+	.card a {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		height: 100%;
+		padding: 1.1rem 1.25rem;
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 14px;
+		text-decoration: none;
+		color: inherit;
+		transition:
+			transform 0.15s ease,
+			background 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	.card a:hover {
+		transform: translateY(-2px);
+		background: rgba(255, 255, 255, 0.1);
+		border-color: rgba(251, 191, 36, 0.5);
+	}
+
+	.flag {
+		font-size: 2.25rem;
+		line-height: 1;
+		flex: none;
+	}
+
+	.card-body {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.card-body h2 {
+		margin: 0 0 0.25rem;
+		font-size: 1.15rem;
+		font-weight: 700;
+	}
+
+	.meta {
+		margin: 0;
+		font-size: 0.85rem;
+		color: rgba(247, 245, 239, 0.7);
+	}
+
+	.round {
+		color: var(--gold);
+		font-weight: 600;
+	}
+
+	.dot {
+		margin: 0 0.35rem;
+		opacity: 0.5;
+	}
+
+	.score {
+		margin: 0.35rem 0 0;
+		font-variant-numeric: tabular-nums;
+		font-weight: 700;
+		color: var(--paper);
+	}
+
+	.card-arrow {
+		flex: none;
+		opacity: 0.4;
+	}
+</style>

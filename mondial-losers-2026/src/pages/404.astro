@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Not found | Mondial Losers of 2026">
+	<div class="not-found">
+		<p class="flag" aria-hidden="true">🟥</p>
+		<h1>Red card.</h1>
+		<p>That team isn't on the scoreboard.</p>
+		<a href="/">← Back to Mondial Losers</a>
+	</div>
+</Layout>
+
+<style>
+	.not-found {
+		text-align: center;
+		padding: 4rem 1rem;
+	}
+
+	.flag {
+		font-size: 3rem;
+		margin: 0 0 0.5rem;
+	}
+
+	a {
+		display: inline-block;
+		margin-top: 1rem;
+		color: var(--gold);
+	}
+</style>

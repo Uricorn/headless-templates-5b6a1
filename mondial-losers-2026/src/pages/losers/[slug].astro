@@ -1,0 +1,164 @@
+---
+import { items } from '@wix/data';
+import Layout from '../../layouts/Layout.astro';
+
+const { slug } = Astro.params;
+
+let loser: any = null;
+let loadError = false;
+
+try {
+	const result = await items.query('losers').eq('slug', slug).limit(1).find();
+	loser = result.items[0] ?? null;
+} catch (err) {
+	console.error(`Failed to load loser "${slug}"`, err);
+	loadError = true;
+}
+
+if (!loser && !loadError) {
+	return Astro.redirect('/404');
+}
+
+const title = loser ? `${loser.team} — eliminated by ${loser.opponent} | Mondial Losers 2026` : 'Mondial Losers of 2026';
+const description = loser ? `${loser.team} were eliminated ${loser.round} by ${loser.opponent}, ${loser.score}.` : undefined;
+---
+
+<Layout title={title} description={description}>
+	{loadError && <p class="empty">Couldn't load this team right now. <a href="/">Back to the scoreboard</a>.</p>}
+
+	{loser && (
+		<article class="detail">
+			<a class="back" href="/">← All losers</a>
+
+			<header class="hero">
+				<span class="flag" aria-hidden="true">{loser.flag}</span>
+				<h1>{loser.team}</h1>
+				<p class="meta">
+					<span class="round">{loser.round}</span>
+					<span class="dot">·</span>
+					<span>{new Date(loser.eliminatedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+				</p>
+			</header>
+
+			<section class="matchup">
+				<div class="matchup-row">
+					<span class="label">Eliminated by</span>
+					<span class="value">{loser.opponent}</span>
+				</div>
+				<div class="matchup-row">
+					<span class="label">Final score</span>
+					<span class="value score">{loser.score}</span>
+				</div>
+			</section>
+
+			<section class="roast">
+				<h2>The Roast</h2>
+				<div class="roast-body" set:html={loser.roast} />
+			</section>
+		</article>
+	)}
+</Layout>
+
+<style>
+	.empty {
+		text-align: center;
+		padding: 3rem 1rem;
+	}
+
+	.back {
+		display: inline-block;
+		margin-bottom: 1.5rem;
+		font-size: 0.9rem;
+		color: rgba(247, 245, 239, 0.7);
+		text-decoration: none;
+	}
+
+	.back:hover {
+		color: var(--gold);
+	}
+
+	.hero {
+		text-align: center;
+		padding: 1rem 0 1.5rem;
+	}
+
+	.hero .flag {
+		font-size: 4rem;
+		line-height: 1;
+	}
+
+	.hero h1 {
+		margin: 0.5rem 0 0.35rem;
+		font-size: clamp(1.75rem, 5vw, 2.5rem);
+	}
+
+	.hero .meta {
+		margin: 0;
+		color: rgba(247, 245, 239, 0.7);
+	}
+
+	.round {
+		color: var(--gold);
+		font-weight: 600;
+	}
+
+	.dot {
+		margin: 0 0.35rem;
+		opacity: 0.5;
+	}
+
+	.matchup {
+		max-width: 420px;
+		margin: 0 auto 2rem;
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 14px;
+		padding: 1.25rem 1.5rem;
+	}
+
+	.matchup-row {
+		display: flex;
+		justify-content: space-between;
+		padding: 0.5rem 0;
+	}
+
+	.matchup-row + .matchup-row {
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.label {
+		color: rgba(247, 245, 239, 0.6);
+	}
+
+	.value {
+		font-weight: 700;
+	}
+
+	.value.score {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.roast {
+		max-width: 620px;
+		margin: 0 auto;
+		text-align: center;
+	}
+
+	.roast h2 {
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: var(--red);
+		margin-bottom: 0.75rem;
+	}
+
+	.roast-body {
+		font-size: 1.15rem;
+		line-height: 1.6;
+		color: rgba(247, 245, 239, 0.92);
+	}
+
+	.roast-body :global(p) {
+		margin: 0;
+	}
+</style>
