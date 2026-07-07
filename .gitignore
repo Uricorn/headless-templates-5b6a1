@@ -52,3 +52,6 @@ next-env.d.ts
 /playwright-report/
 /playwright/.cache/
 
+# Wix CLI local state
+.wix/
+
